@@ -58,7 +58,7 @@ DRACULA_GIT_NOLOCK=${DRACULA_GIT_NOLOCK:-$(dracula_test_git_optional_lock)}
 # }}}
 
 # Status segment {{{
-PROMPT='%(?:%F{green}:%F{red})${DRACULA_ARROW_ICON}'
+PROMPT='${DRACULA_ARROW_ICON}'
 # }}}
 
 # Time segment {{{
@@ -80,6 +80,8 @@ dracula_time_segment() {
 PROMPT+='%F{green}%B$(dracula_time_segment) '
 # }}}
 
+# PROMPT+="`wakatime --today` "
+
 # User context segment {{{
 dracula_context() {
   if (( DRACULA_DISPLAY_CONTEXT )); then
@@ -95,7 +97,19 @@ PROMPT+='%F{magenta}%B$(dracula_context)'
 # }}}
 
 # Directory segment {{{
-PROMPT+='%F{blue}%B%c '
+
+_fishy_collapsed_wd() {
+  echo $(pwd | perl -pe '
+   BEGIN {
+      binmode STDIN,  ":encoding(UTF-8)";
+      binmode STDOUT, ":encoding(UTF-8)";
+   }; s|^$ENV{HOME}|~|g; s|/([^/.])[^/]*(?=/)|/$1|g; s|/\.([^/])[^/]*(?=/)|/.$1|g
+')
+}
+
+# PROMPT+='%F{blue}%B%c '
+# PROMPT+='%F{blue}%B%d '
+PROMPT+='%F{blue}%B$(_fishy_collapsed_wd) '
 # }}}
 
 # Async git segment {{{
@@ -149,14 +163,19 @@ precmd() {
   dracula_git_async
 }
 
+# if [[ -n $DRACULA_GIT_STATUS ]]; then
+# PROMPT+='
+# ${DRACULA_MIDDLE}'
+# fi
+
 PROMPT+='$DRACULA_GIT_STATUS'
 
-ZSH_THEME_GIT_PROMPT_CLEAN=") %F{green}%B✔ "
-ZSH_THEME_GIT_PROMPT_DIRTY=") %F{yellow}%B✗ "
-ZSH_THEME_GIT_PROMPT_PREFIX="%F{cyan}%B("
+ZSH_THEME_GIT_PROMPT_CLEAN=" %F{green}%B✔ "
+ZSH_THEME_GIT_PROMPT_DIRTY=" %F{yellow}%B✗ "
+ZSH_THEME_GIT_PROMPT_PREFIX="%F{cyan}%B"
 ZSH_THEME_GIT_PROMPT_SUFFIX="%f%b"
 # }}}
 
 # Ensure effects are reset
-PROMPT+='%f%b'
-
+PROMPT+='
+${DRACULA_SUFFIX}%f%b'
